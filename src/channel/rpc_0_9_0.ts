@@ -774,12 +774,13 @@ export class RpcChannel {
     };
 
     if (invocation.type === ETransactionType.INVOKE) {
+      const proofFacts = invocation.proofFacts?.map((it) => toHex(it)) ?? [];
       const btx: INVOKE_TXN_V3_WITH_PROOF_09 = {
         type: RPC.ETransactionType.INVOKE,
         sender_address: invocation.contractAddress,
         calldata: CallData.toHex(invocation.calldata),
         ...details,
-        proof_facts: invocation.proofFacts?.map((it) => toHex(it)) ?? [],
+        ...(proofFacts.length > 0 && { proof_facts: proofFacts }),
       };
       return btx as any; // This 'as any' is internal to the generic function - the external API is type-safe
     }

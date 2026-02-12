@@ -1,4 +1,4 @@
-import { constants, v2hash } from '../../src';
+import { constants, hash, v2hash } from '../../src';
 
 describe('TxV2 Hash Tests', () => {
   describe('calculateTransactionHashCommon()', () => {
@@ -14,6 +14,53 @@ describe('TxV2 Hash Tests', () => {
       );
       expect(result).toBe('0x63ba2bc7f3a3912597e221d5fad8eb0783e0684a428b47fa4737faf66f46dfb');
     });
+  });
+});
+
+describe('TxV3 Invoke proofFacts Hash Tests', () => {
+  const commonParams = {
+    senderAddress: '0x12fd538',
+    version: '0x3' as const,
+    compiledCalldata: ['0x11', '0x26'] as string[],
+    chainId: constants.StarknetChainId.SN_SEPOLIA,
+    nonce: 9,
+    accountDeploymentData: [] as string[],
+    nonceDataAvailabilityMode: 0,
+    feeDataAvailabilityMode: 0,
+    resourceBounds: {
+      l2_gas: { max_amount: 0n, max_price_per_unit: 0n },
+      l1_gas: { max_amount: 0x7c9n, max_price_per_unit: 1n },
+      l1_data_gas: { max_amount: 0n, max_price_per_unit: 0n },
+    },
+    tip: 0,
+    paymasterData: [] as string[],
+  };
+
+  test('empty proofFacts produces the same hash as omitted proofFacts', () => {
+    const hashWithout = hash.calculateInvokeTransactionHash({ ...commonParams });
+    const hashEmpty = hash.calculateInvokeTransactionHash({ ...commonParams, proofFacts: [] });
+    expect(hashEmpty).toBe(hashWithout);
+  });
+
+  test('non-empty proofFacts changes the transaction hash', () => {
+    const hashWithout = hash.calculateInvokeTransactionHash({ ...commonParams });
+    const hashWithPF = hash.calculateInvokeTransactionHash({
+      ...commonParams,
+      proofFacts: ['0x1', '0x2'],
+    });
+    expect(hashWithPF).not.toBe(hashWithout);
+  });
+
+  test('proofFacts order matters for the hash', () => {
+    const hash1 = hash.calculateInvokeTransactionHash({
+      ...commonParams,
+      proofFacts: ['0x1', '0x2'],
+    });
+    const hash2 = hash.calculateInvokeTransactionHash({
+      ...commonParams,
+      proofFacts: ['0x2', '0x1'],
+    });
+    expect(hash1).not.toBe(hash2);
   });
 });
 

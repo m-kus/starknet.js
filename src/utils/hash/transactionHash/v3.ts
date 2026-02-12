@@ -182,8 +182,16 @@ export function calculateInvokeTransactionHash(
   feeDataAvailabilityMode: EDAMode,
   resourceBounds: ResourceBoundsBN,
   tip: BigNumberish,
-  paymasterData: BigNumberish[]
+  paymasterData: BigNumberish[],
+  proofFacts: BigNumberish[] = []
 ): string {
+  const additionalData: BigNumberish[] = [
+    poseidonHashMany(AToBI(accountDeploymentData)),
+    poseidonHashMany(AToBI(compiledCalldata)),
+  ];
+  if (proofFacts.length > 0) {
+    additionalData.push(poseidonHashMany(AToBI(proofFacts)));
+  }
   return calculateTransactionHashCommon(
     TransactionHashPrefix.INVOKE,
     version,
@@ -195,6 +203,6 @@ export function calculateInvokeTransactionHash(
     nonceDataAvailabilityMode,
     feeDataAvailabilityMode,
     resourceBounds,
-    [poseidonHashMany(AToBI(accountDeploymentData)), poseidonHashMany(AToBI(compiledCalldata))]
+    additionalData
   );
 }
