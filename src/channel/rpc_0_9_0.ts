@@ -25,6 +25,7 @@ import {
 } from '../types';
 import assert from '../utils/assert';
 import { ETransactionType, JRPC, RPCSPEC09 as RPC } from '../types/api';
+import type { INVOKE_TXN_V3_WITH_PROOF_09 } from '../provider/types/spec.type';
 import { BatchClient } from '../utils/batch';
 import { CallData } from '../utils/calldata';
 import { isSierra } from '../utils/contract';
@@ -773,11 +774,12 @@ export class RpcChannel {
     };
 
     if (invocation.type === ETransactionType.INVOKE) {
-      const btx: RPC.INVOKE_TXN_V3 = {
+      const btx: INVOKE_TXN_V3_WITH_PROOF_09 = {
         type: RPC.ETransactionType.INVOKE,
         sender_address: invocation.contractAddress,
         calldata: CallData.toHex(invocation.calldata),
         ...details,
+        proof_facts: invocation.proofFacts?.map((it) => toHex(it)) ?? [],
       };
       return btx as any; // This 'as any' is internal to the generic function - the external API is type-safe
     }

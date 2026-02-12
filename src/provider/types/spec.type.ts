@@ -223,3 +223,9 @@ export const { ETransactionExecutionStatus: TransactionExecutionStatus } = RPCSP
 
 export type BlockTag = RPCSPEC09.EBlockTag;
 export const { EBlockTag: BlockTag } = RPCSPEC09;
+
+// Extended invoke types with proof_facts support (remove once upstream types-js adds the field)
+export type INVOKE_TXN_V3_WITH_PROOF = RPCSPEC010.INVOKE_TXN_V3 & { proof_facts?: FELT[] };
+export type INVOKE_TXN_V3_WITH_PROOF_09 = RPCSPEC09.INVOKE_TXN_V3 & {
+  proof_facts?: RPCSPEC09.FELT[];
+};
