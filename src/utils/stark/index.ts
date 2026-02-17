@@ -45,6 +45,7 @@ type V3Details = Required<
     | 'feeDataAvailabilityMode'
     | 'resourceBounds'
     | 'proofFacts'
+    | 'proof'
   >
 >;
 
@@ -424,6 +425,7 @@ export function v3Details(details: UniversalDetails): V3Details {
     feeDataAvailabilityMode: details.feeDataAvailabilityMode || EDataAvailabilityMode.L1,
     resourceBounds: details.resourceBounds ?? zeroResourceBounds(),
     proofFacts: details.proofFacts || [],
+    proof: details.proof || '',
   };
 }
 

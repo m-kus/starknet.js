@@ -780,7 +780,8 @@ export class RpcChannel {
         sender_address: invocation.contractAddress,
         calldata: CallData.toHex(invocation.calldata),
         ...details,
-        ...(proofFacts.length > 0 && { proof_facts: proofFacts }),
+        ...(invocation.proofFacts !== undefined && { proof_facts: proofFacts }),
+        ...(invocation.proof !== undefined && { proof: invocation.proof }),
       };
       return btx as any; // This 'as any' is internal to the generic function - the external API is type-safe
     }

@@ -199,6 +199,7 @@ export type V3TransactionDetails = {
   nonceDataAvailabilityMode: EDataAvailabilityMode;
   feeDataAvailabilityMode: EDataAvailabilityMode;
   proofFacts: BigNumberish[];
+  proof: string;
 };
 
 /**
