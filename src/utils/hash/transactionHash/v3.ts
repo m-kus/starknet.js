@@ -63,13 +63,18 @@ export function encodeDataResourceBoundsL1(bounds: ResourceBoundsBN): bigint {
 }
 
 /**
- * hash tip and resource bounds (3 bounds params) V3 RPC 0.8
+ * hash tip and resource bounds V3 RPC 0.8+
+ * Includes l1_data_gas only when present in bounds (AllResources variant),
+ * matching the blockifier's ValidResourceBounds::L1Gas vs AllResources logic.
  */
 export function hashFeeFieldV3B3(tip: BigNumberish, bounds: ResourceBoundsBN) {
   const L1Bound = encodeResourceBoundsL1(bounds);
   const L2Bound = encodeResourceBoundsL2(bounds);
-  const L1Data = encodeDataResourceBoundsL1(bounds);
-  return poseidonHashMany([BigInt(tip), L1Bound, L2Bound, L1Data]);
+  const elements: bigint[] = [BigInt(tip), L1Bound, L2Bound];
+  if ('l1_data_gas' in bounds) {
+    elements.push(encodeDataResourceBoundsL1(bounds));
+  }
+  return poseidonHashMany(elements);
 }
 
 export function calculateTransactionHashCommon(

@@ -44,9 +44,9 @@ type V3Details = Required<
     | 'nonceDataAvailabilityMode'
     | 'feeDataAvailabilityMode'
     | 'resourceBounds'
-    | 'proofFacts'
   >
->;
+> &
+  Pick<UniversalDetails, 'proofFacts' | 'proof'>;
 
 /**
  * Compress compiled Cairo 0 program
@@ -423,7 +423,8 @@ export function v3Details(details: UniversalDetails): V3Details {
     nonceDataAvailabilityMode: details.nonceDataAvailabilityMode || EDataAvailabilityMode.L1,
     feeDataAvailabilityMode: details.feeDataAvailabilityMode || EDataAvailabilityMode.L1,
     resourceBounds: details.resourceBounds ?? zeroResourceBounds(),
-    proofFacts: details.proofFacts || [],
+    ...(details.proofFacts !== undefined && { proofFacts: details.proofFacts }),
+    ...(details.proof !== undefined && { proof: details.proof }),
   };
 }
 

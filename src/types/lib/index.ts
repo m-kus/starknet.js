@@ -198,7 +198,8 @@ export type V3TransactionDetails = {
   accountDeploymentData: BigNumberish[];
   nonceDataAvailabilityMode: EDataAvailabilityMode;
   feeDataAvailabilityMode: EDataAvailabilityMode;
-  proofFacts: BigNumberish[];
+  proofFacts?: BigNumberish[];
+  proof?: string;
 };
 
 /**
