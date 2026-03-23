@@ -305,7 +305,10 @@ export class Account extends Provider implements AccountInterface {
     const { resourceBounds: providedResourceBounds } = transactionsDetail;
     let resourceBounds = providedResourceBounds;
     if (!resourceBounds) {
-      const estimateResponse = await this.estimateInvokeFee(calls, detailsWithTip);
+      const estimateResponse = await this.estimateInvokeFee(calls, {
+        ...detailsWithTip,
+        proof: undefined,
+      });
       resourceBounds = estimateResponse.resourceBounds;
     }
 
