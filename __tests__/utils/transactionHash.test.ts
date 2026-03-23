@@ -1,4 +1,4 @@
-import { constants, v2hash } from '../../src';
+import { constants, hash, v2hash, v3hash } from '../../src';
 
 describe('TxV2 Hash Tests', () => {
   describe('calculateTransactionHashCommon()', () => {
@@ -14,6 +14,96 @@ describe('TxV2 Hash Tests', () => {
       );
       expect(result).toBe('0x63ba2bc7f3a3912597e221d5fad8eb0783e0684a428b47fa4737faf66f46dfb');
     });
+  });
+});
+
+describe('TxV3 Invoke proofFacts Hash Tests', () => {
+  const commonParams = {
+    senderAddress: '0x12fd538',
+    version: '0x3' as const,
+    compiledCalldata: ['0x11', '0x26'] as string[],
+    chainId: constants.StarknetChainId.SN_SEPOLIA,
+    nonce: 9,
+    accountDeploymentData: [] as string[],
+    nonceDataAvailabilityMode: 0,
+    feeDataAvailabilityMode: 0,
+    resourceBounds: {
+      l2_gas: { max_amount: 0n, max_price_per_unit: 0n },
+      l1_gas: { max_amount: 0x7c9n, max_price_per_unit: 1n },
+      l1_data_gas: { max_amount: 0n, max_price_per_unit: 0n },
+    },
+    tip: 0,
+    paymasterData: [] as string[],
+  };
+
+  test('empty proofFacts produces the same hash as omitted proofFacts', () => {
+    const hashWithout = hash.calculateInvokeTransactionHash({ ...commonParams });
+    const hashEmpty = hash.calculateInvokeTransactionHash({ ...commonParams, proofFacts: [] });
+    expect(hashEmpty).toBe(hashWithout);
+  });
+
+  test('non-empty proofFacts changes the transaction hash', () => {
+    const hashWithout = hash.calculateInvokeTransactionHash({ ...commonParams });
+    const hashWithPF = hash.calculateInvokeTransactionHash({
+      ...commonParams,
+      proofFacts: ['0x1', '0x2'],
+    });
+    expect(hashWithPF).not.toBe(hashWithout);
+  });
+
+  test('proofFacts order matters for the hash', () => {
+    const hash1 = hash.calculateInvokeTransactionHash({
+      ...commonParams,
+      proofFacts: ['0x1', '0x2'],
+    });
+    const hash2 = hash.calculateInvokeTransactionHash({
+      ...commonParams,
+      proofFacts: ['0x2', '0x1'],
+    });
+    expect(hash1).not.toBe(hash2);
+  });
+});
+
+describe('TxV3 hashFeeFieldV3B3 — blockifier test vectors', () => {
+  // Test vectors from blockifier APOLLO-PRE-PROOF-DEMO-11
+  // crates/starknet_api/src/transaction_hash_test.rs::test_tip_resource_bounds_hash_vectors
+
+  test('L1Gas variant (no l1_data_gas) matches blockifier', () => {
+    // ValidResourceBounds::L1Gas: hashes [tip, l1, l2] (3 elements)
+    // get_l2_bounds returns default (0,0) for L1Gas variant
+    const bounds = {
+      l1_gas: { max_amount: 0x1000n, max_price_per_unit: 0x2000n },
+      l2_gas: { max_amount: 0n, max_price_per_unit: 0n },
+    };
+    const result = v3hash.hashFeeFieldV3B3(0, bounds);
+    expect(result.toString(16)).toBe(
+      '25630b34ab588bfc7763f0428f8ecb8fe9b1c149b82e0aee3ca10583eed2ebe'
+    );
+  });
+
+  test('AllResources variant (with l1_data_gas) matches blockifier', () => {
+    // ValidResourceBounds::AllResources: hashes [tip, l1, l2, l1_data] (4 elements)
+    const bounds = {
+      l1_gas: { max_amount: 0x1000n, max_price_per_unit: 0x2000n },
+      l2_gas: { max_amount: 0x3000n, max_price_per_unit: 0x4000n },
+      l1_data_gas: { max_amount: 0x5000n, max_price_per_unit: 0x6000n },
+    };
+    const result = v3hash.hashFeeFieldV3B3(0, bounds);
+    expect(result.toString(16)).toBe(
+      '3d848944220686a0d567e2a3895f3651ad616d4eccb473a03a93150c40b5e13'
+    );
+  });
+
+  test('AllResources with zero l1_data_gas matches blockifier', () => {
+    const bounds = {
+      l1_gas: { max_amount: 0x1000n, max_price_per_unit: 0x2000n },
+      l2_gas: { max_amount: 0x3000n, max_price_per_unit: 0x4000n },
+      l1_data_gas: { max_amount: 0n, max_price_per_unit: 0n },
+    };
+    const result = v3hash.hashFeeFieldV3B3(0, bounds);
+    expect(result.toString(16)).toBe(
+      '6916420cf10b91926a408900e0e8f5548bbd3baccb11b2e0ad1a58246b0ffe0'
+    );
   });
 });
 

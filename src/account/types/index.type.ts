@@ -71,6 +71,8 @@ export interface UniversalDetails {
   version?: BigNumberish;
   resourceBounds?: ResourceBoundsBN; // ignored on estimate
   skipValidate?: boolean; // ignored on non-estimate
+  proofFacts?: BigNumberish[];
+  proof?: string;
 }
 
 export interface PaymasterDetails {
